@@ -54,13 +54,13 @@ public class FS5000 {
 
             logger.log(Level.INFO, "Sent to port: " + Arrays.toString(unsignedBytes));
 
-            byte[] readBuffer = new byte[1024];
             int counter = 0;
 
-            while (counter < 10) {
+            while (counter < 10000) {
 
-                Thread.sleep(1000);
+                Thread.sleep(10000);
 
+                byte[] readBuffer = new byte[1024];
                 int numRead = serialPort.readBytes(readBuffer, readBuffer.length);
                 if (0 != numRead) {
                     String response = new String(readBuffer, 0, numRead);
