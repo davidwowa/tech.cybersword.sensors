@@ -7,8 +7,6 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
@@ -17,11 +15,14 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.fazecast.jSerialComm.SerialPort;
 
 public class FS5000 {
 
-    private static final Logger logger = Logger.getLogger(FS5000.class.getName());
+    private static final Logger logger = LogManager.getLogger(FS5000.class);
 
     public static void main(String[] args) {
         String[] portNames = { "/dev/tty.usbserial-1440", "/dev/cu.usbserial-1440" };
@@ -30,13 +31,13 @@ public class FS5000 {
         for (String portName : portNames) {
             serialPort = SerialPort.getCommPort(portName);
             if (serialPort.openPort()) {
-                logger.log(Level.INFO, "Connected to port: " + portName);
+                logger.info("Connected to port: " + portName);
                 break;
             }
         }
 
         if (serialPort == null || !serialPort.isOpen()) {
-            logger.log(Level.SEVERE, "Failed to open any specified ports.");
+            logger.error("Failed to open any specified ports.");
             return;
         }
 
@@ -52,33 +53,38 @@ public class FS5000 {
             }
             serialPort.writeBytes(unsignedBytes, unsignedBytes.length);
 
-            logger.log(Level.INFO, "Sent to port: " + Arrays.toString(unsignedBytes));
+            logger.info("Sent to port: " + Arrays.toString(unsignedBytes));
 
             int counter = 0;
 
-            while (counter < 10000) {
+            while (counter < 1000) {
 
-                Thread.sleep(10000);
+                Thread.sleep(1000);
 
-                byte[] readBuffer = new byte[1024];
-                int numRead = serialPort.readBytes(readBuffer, readBuffer.length);
+                int aBytes = serialPort.bytesAvailable();
+
+                byte[] readBuffer = new byte[aBytes];
+
+                int numRead = serialPort.readBytes(readBuffer, aBytes);
                 if (0 != numRead) {
-                    String response = new String(readBuffer, 0, numRead);
+                    String response = new String(readBuffer, 0, aBytes);
 
                     response = "FS5000:" + response;
-                    // send(response);
+                    // send(response); // TODO ...
                     broadcast(response, InetAddress.getByName("255.255.255.255"), 44444);
 
-                    logger.log(Level.INFO, "Received from serial port: " + response);
-
+                    logger.info("Received from serial port: " + response);
+                } else {
                     counter++;
+                    logger.warn("counter to exit: " + counter);
                 }
             }
         } catch (Exception e) {
+            logger.error(e.getMessage());
             e.printStackTrace();
         } finally {
             serialPort.closePort();
-            logger.log(Level.INFO, "Port closed.");
+            logger.info("Port closed.");
         }
     }
 
@@ -92,12 +98,11 @@ public class FS5000 {
         socket.send(packet);
         socket.close();
 
-        logger.log(Level.INFO, "Broadcast message sent: " + broadcastMessage);
+        logger.info("Broadcast message sent: " + broadcastMessage);
     }
 
     private static void send(String data) throws Exception {
 
-        // Trust all certificates (not recommended for production)
         TrustManager[] trustAllCerts = new TrustManager[] {
                 new X509TrustManager() {
                     public X509Certificate[] getAcceptedIssuers() {
@@ -116,7 +121,6 @@ public class FS5000 {
         sc.init(null, trustAllCerts, new java.security.SecureRandom());
         HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
 
-        // Ignore hostname verification (not recommended for production)
         HostnameVerifier allHostsValid = new HostnameVerifier() {
             public boolean verify(String hostname, SSLSession session) {
                 return true;
@@ -130,6 +134,6 @@ public class FS5000 {
         conn.setRequestMethod("GET");
 
         int responseCode = conn.getResponseCode();
-        logger.log(Level.INFO, "GET Response Code :: " + responseCode);
+        logger.info("GET Response Code :: " + responseCode);
     }
 }
