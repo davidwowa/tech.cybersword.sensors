@@ -85,35 +85,59 @@
         </executions>
       </plugin>
       <!-- https://github.com/CycloneDX/cyclonedx-maven-plugin -->
-			<plugin>
-				<groupId>org.cyclonedx</groupId>
-				<artifactId>cyclonedx-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<phase>package</phase>
-						<goals>
-							<goal>makeAggregateBom</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<projectType>library</projectType>
-					<schemaVersion>1.4</schemaVersion>
-					<includeBomSerialNumber>true</includeBomSerialNumber>
-					<includeCompileScope>true</includeCompileScope>
-					<includeProvidedScope>true</includeProvidedScope>
-					<includeRuntimeScope>true</includeRuntimeScope>
-					<includeSystemScope>true</includeSystemScope>
-					<includeTestScope>false</includeTestScope>
-					<includeLicenseText>true</includeLicenseText>
-					<outputReactorProjects>true</outputReactorProjects>
-					<outputFormat>all</outputFormat>
-					<outputName>tech.cybersword.sensors.sBOM</outputName>
-					<outputDirectory>.</outputDirectory><!-- usually target, if not redefined in
+      <plugin>
+        <groupId>org.cyclonedx</groupId>
+        <artifactId>cyclonedx-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>makeAggregateBom</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <projectType>library</projectType>
+          <schemaVersion>1.4</schemaVersion>
+          <includeBomSerialNumber>true</includeBomSerialNumber>
+          <includeCompileScope>true</includeCompileScope>
+          <includeProvidedScope>true</includeProvidedScope>
+          <includeRuntimeScope>true</includeRuntimeScope>
+          <includeSystemScope>true</includeSystemScope>
+          <includeTestScope>false</includeTestScope>
+          <includeLicenseText>true</includeLicenseText>
+          <outputReactorProjects>true</outputReactorProjects>
+          <outputFormat>all</outputFormat>
+          <outputName>tech.cybersword.sensors.sBOM</outputName>
+          <outputDirectory>.</outputDirectory><!-- usually target, if not redefined in
 					pom.xml -->
-					<verbose>false</verbose><!-- = ${cyclonedx.verbose} -->
-				</configuration>
-			</plugin>
+          <verbose>false</verbose><!-- = ${cyclonedx.verbose} -->
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>3.3.0</version>
+        <configuration>
+          <archive>
+            <manifest>
+              <mainClass>tech.cybersword.FS5000</mainClass>
+            </manifest>
+          </archive>
+          <descriptorRefs>
+            <descriptorRef>jar-with-dependencies</descriptorRef>
+          </descriptorRefs>
+        </configuration>
+        <executions>
+          <execution>
+            <id>make-assembly</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
 </project>

@@ -25,19 +25,36 @@ public class FS5000 {
     private static final Logger logger = LogManager.getLogger(FS5000.class);
 
     public static void main(String[] args) {
-        String[] portNames = { "/dev/tty.usbserial-1440", "/dev/cu.usbserial-1440" };
-        SerialPort serialPort = null;
+        if (args.length == 0) {
+            logger.error("Please provide the port name as an argument.");
+            return;
+        }
 
-        for (String portName : portNames) {
-            serialPort = SerialPort.getCommPort(portName);
-            if (serialPort.openPort()) {
-                logger.info("Connected to port: " + portName);
-                break;
-            }
+        // String[] portNames = { "/dev/tty.usbserial-1440", "/dev/cu.usbserial-1440" };
+        // SerialPort serialPort = null;
+
+        // for (String portName : portNames) {
+        // serialPort = SerialPort.getCommPort(portName);
+        // if (serialPort.openPort()) {
+        // logger.info("Connected to port: " + portName);
+        // break;
+        // }
+        // }
+
+        SerialPort[] ports = SerialPort.getCommPorts();
+        for (SerialPort port : ports) {
+            System.out.println("Available port: " + port.getSystemPortName());
+        }
+
+        SerialPort serialPort = SerialPort.getCommPort(args[0]);
+        if (!serialPort.openPort()) {
+            logger.info("not connected to port: " + serialPort.getSystemPortName());
+            return;
         }
 
         if (serialPort == null || !serialPort.isOpen()) {
-            logger.error("Failed to open any specified ports.");
+            System.out.println("Failed to open port " + serialPort.getSystemPortName());
+            logger.error("Failed to open any specified ports." + serialPort.getSystemPortName());
             return;
         }
 
